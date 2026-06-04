@@ -1,0 +1,47 @@
+
+version: '3.8'
+
+services:
+  # 主应用服务
+  elderly-care:
+    build: .
+    container_name: elderly-care-backend
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      - MQTT_BROKER_URL=mqtt://mqtt:1883
+      - MQTT_CLIENT_ID=elderly-care-server
+      # 微信配置（根据实际情况设置）
+      - WECHAT_APPID=your_wechat_appid
+      - WECHAT_SECRET=your_wechat_secret
+      - WECHAT_TEMPLATE_ID=your_wechat_template_id
+      # Coze配置（根据实际情况设置）
+      - COZE_API_KEY=your_coze_api_key
+      - COZE_BOT_ID=your_coze_bot_id
+    depends_on:
+      - mqtt
+    networks:
+      - elderly-care-network
+    restart: unless-stopped
+
+  # MQTT Broker（Eclipse Mosquitto）
+  mqtt:
+    image: eclipse-mosquitto:2.0
+    container_name: elderly-care-mqtt
+    ports:
+      - "1883:1883"
+      - "9001:9001"
+    volumes:
+      - ./mosquitto/config:/mosquitto/config
+      - ./mosquitto/data:/mosquitto/data
+      - ./mosquitto/log:/mosquitto/log
+    networks:
+      - elderly-care-network
+    restart: unless-stopped
+
+# 网络配置
+networks:
+  elderly-care-network:
+    driver: bridge
